@@ -1,0 +1,4 @@
+{
+    "purpose": "fine-tune",
+    "file": "@mydata.jsonl"
+}

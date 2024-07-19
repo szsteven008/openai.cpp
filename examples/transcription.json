@@ -1,0 +1,4 @@
+{
+    "file": "@/path/to/file/audio.mp3",
+    "model": "whisper-1"
+}

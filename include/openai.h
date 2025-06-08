@@ -19,7 +19,9 @@ namespace openai {
         Client cli_;
 
         public:
-            Session(const string& schema_host_port);
+            Session(const string& schema_host_port, bool log = true);
+
+            void stop();
 
             void set_token(const string& token);
             void set_proxy(const string& host, int port);
@@ -33,33 +35,39 @@ namespace openai {
             session_result del(const string& path);                
     };
 
-    Session::Session(const string& schema_host_port) : 
+    inline Session::Session(const string& schema_host_port, bool verbose /* = true */) : 
         cli_{schema_host_port} {
-        cli_.set_logger([](const Request& req, const Response& resp) {
-            cout << endl;
-            cout << req.method << " " << req.path << endl;
-            for (auto header: req.headers) {
-                cout << header.first << ": " << header.second << endl;
-            }
-            cout << endl << endl;
+        if (verbose) {
+            cli_.set_logger([](const Request& req, const Response& resp) {
+                cout << endl;
+                cout << req.method << " " << req.path << endl;
+                for (auto header: req.headers) {
+                    cout << header.first << ": " << header.second << endl;
+                }
+                cout << endl << endl;
 
-            cout << resp.status << " " << resp.reason << endl;
-            for (auto header: resp.headers) {
-                cout << header.first << ": " << header.second << endl;
-            }
-            cout << endl << endl;
-        });
+                cout << resp.status << " " << resp.reason << endl;
+                for (auto header: resp.headers) {
+                    cout << header.first << ": " << header.second << endl;
+                }
+                cout << endl << endl;
+            });
+        }
+    }
+
+    inline void Session::stop() {
+        cli_.stop();
     }
     
-    void Session::set_token(const string& token) {
+    inline void Session::set_token(const string& token) {
         cli_.set_bearer_token_auth(token);
     }
 
-    void Session::set_proxy(const string& host, int port) {
+    inline void Session::set_proxy(const string& host, int port) {
         cli_.set_proxy(host, port);
     }
 
-    session_result Session::get(const string& path) {
+    inline session_result Session::get(const string& path) {
         auto res = cli_.Get(path);
         if (res->status != StatusCode::OK_200) {
             return make_tuple(-1, res->reason);
@@ -67,7 +75,7 @@ namespace openai {
         return make_tuple(0, res->body);
     }
 
-    session_result Session::post(const string& path, 
+    inline session_result Session::post(const string& path, 
                                  const string& data, 
                                  const string& content_type /* = "application/json" */) {
         auto res = cli_.Post(path, data, content_type);
@@ -77,7 +85,7 @@ namespace openai {
         return make_tuple(0, res->body);
     }
 
-    session_result Session::post(const string& path, 
+    inline session_result Session::post(const string& path, 
                                  const MultipartFormDataItems& items) {
         auto res = cli_.Post(path, items);
         if (res->status != StatusCode::OK_200) {
@@ -86,7 +94,7 @@ namespace openai {
         return make_tuple(0, res->body);
     }
 
-    session_result Session::del(const string& path) {
+    inline session_result Session::del(const string& path) {
         auto res = cli_.Delete(path);
         if (res->status != StatusCode::OK_200) {
             return make_tuple(-1, res->reason);
@@ -204,7 +212,10 @@ namespace openai {
         public:
             OpenAI(const string& schema_host_port, 
                    const string& token = "", 
-                   const string& proxy_host_port = "");
+                   const string& proxy_host_port = "", 
+                   bool verbose = true);
+
+            void stop();
 
             json get(const string& path);
             json post(const string& path, 
@@ -225,10 +236,11 @@ namespace openai {
             CategoryModels models { *this };
     };
 
-    OpenAI::OpenAI(const string& schema_host_port, 
+    inline OpenAI::OpenAI(const string& schema_host_port, 
                    const string& token /* = "" */, 
-                   const string& proxy_host_port /* = "" */)
-            : session_{schema_host_port} {
+                   const string& proxy_host_port /* = "" */, 
+                   bool verbose /* = true */)
+            : session_{schema_host_port, verbose} {
         if (!token.empty()) {
             session_.set_token(token);
         }
@@ -242,7 +254,11 @@ namespace openai {
         }
     }
 
-    json OpenAI::get(const string& path) {
+    inline void OpenAI::stop() {
+        session_.stop();
+    }
+
+    inline json OpenAI::get(const string& path) {
         int result;
         string response;
 
@@ -258,7 +274,7 @@ namespace openai {
         }
     }
 
-    json OpenAI::post(const string& path, 
+    inline json OpenAI::post(const string& path, 
                       const string& data, 
                       const string& content_type /* = "application/json" */) {
         int result;
@@ -276,7 +292,7 @@ namespace openai {
         }
     }
 
-    json OpenAI::post(const string& path, 
+    inline json OpenAI::post(const string& path, 
                       const MultipartFormDataItems& items) {
         int result;
         string response;
@@ -293,7 +309,7 @@ namespace openai {
         }
     }
 
-    json OpenAI::del(const string& path) {
+    inline json OpenAI::del(const string& path) {
         int result;
         string response;
 
@@ -309,12 +325,12 @@ namespace openai {
         }
     }
 
-    string CategoryAudio::speech(json request) {
+    inline string CategoryAudio::speech(json request) {
         json res = openai_.post("/v1/audio/speech", request.dump());
         return res["response"].get<string>();
     }
 
-    json CategoryAudio::transcription(json request) {
+    inline json CategoryAudio::transcription(json request) {
         MultipartFormDataItems items;
 
         if (request.contains("file")) {
@@ -351,7 +367,7 @@ namespace openai {
         return openai_.post("/v1/audio/transcriptions", items);
     }
 
-    json CategoryAudio::translation(json request) {
+    inline json CategoryAudio::translation(json request) {
         MultipartFormDataItems items;
 
         if (request.contains("file")) {
@@ -383,39 +399,39 @@ namespace openai {
         return openai_.post("/v1/audio/translations", items);
     }
 
-    json CategoryChat::create(json request) {
+    inline json CategoryChat::create(json request) {
         return openai_.post("/v1/chat/completions", request.dump());
     }
 
-    json CategoryEmbedding::create(json request) {
+    inline json CategoryEmbedding::create(json request) {
         return openai_.post("/v1/embeddings", request.dump());
     }
 
-    json CategoryFinetunning::create(json request) {
+    inline json CategoryFinetunning::create(json request) {
         return openai_.post("/v1/fine_tuning/jobs", request.dump());
     }
 
-    json CategoryFinetunning::list() {
+    inline json CategoryFinetunning::list() {
         return openai_.get("/v1/fine_tuning/jobs");
     }
 
-    json CategoryFinetunning::events(const string& fine_tuning_job_id) {
+    inline json CategoryFinetunning::events(const string& fine_tuning_job_id) {
         return openai_.get(string("/v1/fine_tuning/jobs/") + fine_tuning_job_id + "/events");
     }
 
-    json CategoryFinetunning::checkpoints(const string& fine_tuning_job_id) {
+    inline json CategoryFinetunning::checkpoints(const string& fine_tuning_job_id) {
         return openai_.get(string("/v1/fine_tuning/jobs/") + fine_tuning_job_id + "/checkpoints");
     }
 
-    json CategoryFinetunning::retrieve(const string& fine_tuning_job_id) {
+    inline json CategoryFinetunning::retrieve(const string& fine_tuning_job_id) {
         return openai_.get(string("/v1/fine_tuning/jobs/") + fine_tuning_job_id);
     }
 
-    json CategoryFinetunning::cancel(const string& fine_tuning_job_id) {
+    inline json CategoryFinetunning::cancel(const string& fine_tuning_job_id) {
         return openai_.post(string("/v1/fine_tuning/jobs/") + fine_tuning_job_id + "/cancel", "");
     }
 
-    json CategoryFiles::upload(json request) {
+    inline json CategoryFiles::upload(json request) {
         MultipartFormDataItems items;
 
         if (request.contains("file")) {
@@ -432,27 +448,27 @@ namespace openai {
         return openai_.post("/v1/files", items);
     }
 
-    json CategoryFiles::list() {
+    inline json CategoryFiles::list() {
         return openai_.get("/v1/files");
     }
 
-    json CategoryFiles::retrieve(const string& file_id) {
+    inline json CategoryFiles::retrieve(const string& file_id) {
         return openai_.get(string("/v1/files/") + file_id);
     }
 
-    json CategoryFiles::del(const string& file_id) {
+    inline json CategoryFiles::del(const string& file_id) {
         return openai_.del(string("/v1/files/") + file_id);
     }
 
-    json CategoryFiles::content(const string& file_id) {
+    inline json CategoryFiles::content(const string& file_id) {
         return openai_.get(string("/v1/files/") + file_id + "/content");
     }
 
-    json CategoryImages::create(json request) {
+    inline json CategoryImages::create(json request) {
         return openai_.post("/v1/images/generations", request.dump());
     }
 
-    json CategoryImages::edit(json request) {
+    inline json CategoryImages::edit(json request) {
         MultipartFormDataItems items;
 
         if (request.contains("image")) {
@@ -500,7 +516,7 @@ namespace openai {
         return openai_.post("/v1/images/edits", items);
     }
 
-    json CategoryImages::variation(json request) {
+    inline json CategoryImages::variation(json request) {
         MultipartFormDataItems items;
 
         if (request.contains("image")) {
@@ -537,62 +553,62 @@ namespace openai {
         return openai_.post("/v1/images/variations", items);
     }
 
-    json CategoryModels::list() {
+    inline json CategoryModels::list() {
         return openai_.get("/v1/models");
     }
 
-    json CategoryModels::retrieve(const string& model) {
+    inline json CategoryModels::retrieve(const string& model) {
         return openai_.get(string("/v1/models/") + model);
     }
 
-    json CategoryModels::del(const string& model) {
+    inline json CategoryModels::del(const string& model) {
         return openai_.del(string("/v1/models/") + model);
     }
 
-    json CategoryModerations::create(json request) {
+    inline json CategoryModerations::create(json request) {
         return openai_.post("/v1/moderations", request.dump());
     }
 
-    OpenAI& start(const string& schema_host_port = "", 
+    inline OpenAI& start(const string& schema_host_port = "", 
                   const string& token = "", 
                   const string& proxy_host_port = "") {
         static OpenAI instance(schema_host_port, token, proxy_host_port);
         return instance;
     }
 
-    OpenAI& instance() {
+    inline OpenAI& instance() {
         return start();
     }
 
-    CategoryAudio& audio() {
+    inline CategoryAudio& audio() {
         return instance().audio;
     }
 
-    CategoryChat& chat() {
+    inline CategoryChat& chat() {
         return instance().chat;
     }
 
-    CategoryEmbedding& embedding() {
+    inline CategoryEmbedding& embedding() {
         return instance().embedding;
     }
 
-    CategoryFiles& files() {
+    inline CategoryFiles& files() {
         return instance().files;
     }
 
-    CategoryFinetunning& finetunning() {
+    inline CategoryFinetunning& finetunning() {
         return instance().finetunning;
     }
 
-    CategoryImages& images() {
+    inline CategoryImages& images() {
         return instance().images;
     }
 
-    CategoryModerations& moderations() {
+    inline CategoryModerations& moderations() {
         return instance().moderations;
     }
 
-    CategoryModels& models() {
+    inline CategoryModels& models() {
         return instance().models;
     }
 }

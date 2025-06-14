@@ -19,7 +19,7 @@ namespace openai {
         Client cli_;
 
         public:
-            Session(const string& schema_host_port, bool log = true);
+            Session(const string& schema_host_port, bool verbose = false);
 
             void stop();
 
@@ -35,7 +35,7 @@ namespace openai {
             session_result del(const string& path);                
     };
 
-    inline Session::Session(const string& schema_host_port, bool verbose /* = true */) : 
+    inline Session::Session(const string& schema_host_port, bool verbose /* = false */) : 
         cli_{schema_host_port} {
         if (verbose) {
             cli_.set_logger([](const Request& req, const Response& resp) {
@@ -213,7 +213,7 @@ namespace openai {
             OpenAI(const string& schema_host_port, 
                    const string& token = "", 
                    const string& proxy_host_port = "", 
-                   bool verbose = true);
+                   bool verbose = false);
 
             void stop();
 
@@ -239,7 +239,7 @@ namespace openai {
     inline OpenAI::OpenAI(const string& schema_host_port, 
                    const string& token /* = "" */, 
                    const string& proxy_host_port /* = "" */, 
-                   bool verbose /* = true */)
+                   bool verbose /* = false */)
             : session_{schema_host_port, verbose} {
         if (!token.empty()) {
             session_.set_token(token);

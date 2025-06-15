@@ -580,6 +580,10 @@ namespace openai {
         return start();
     }
 
+    inline void stop() {
+        instance().stop();
+    }
+
     inline CategoryAudio& audio() {
         return instance().audio;
     }

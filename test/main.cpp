@@ -2,8 +2,6 @@
 #include <fstream>
 #include <boost/program_options.hpp>
 
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-
 #include "../include/openai.h"
 
 using namespace std;
@@ -70,14 +68,16 @@ int main(int argc, char * argv[]) {
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, opts), vm);
 
-    try {
-        if (vm.count("help") > 0) {
-            usage(argv[0], opts);
-        } else if (vm.count("audio") > 0) {
-            openai::start(vm["base-uri"].as<string>(), 
-                          vm["token"].as<string>(), 
-                          vm["proxy"].as<string>());
+    if (vm.count("help") > 0) {
+        usage(argv[0], opts);
+        return 0;
+    }
 
+    try {
+        openai::start(vm["base-uri"].as<string>(), 
+                      vm["token"].as<string>(), 
+                      vm["proxy"].as<string>());
+        if (vm.count("audio") > 0) {
             if (vm.count("speech") > 0) {
                 if (vm.count("data") > 0) {
                     ifstream is(vm["data"].as<string>());
@@ -120,10 +120,6 @@ int main(int argc, char * argv[]) {
                 }
             }
         } else if (vm.count("chat") > 0) {
-            openai::start(vm["base-uri"].as<string>(), 
-                          vm["token"].as<string>(), 
-                          vm["proxy"].as<string>());
-
             if (vm.count("create") > 0) {
                 if (vm.count("data") > 0) {
                     ifstream is(vm["data"].as<string>());
@@ -137,10 +133,6 @@ int main(int argc, char * argv[]) {
                 }
             }
         } else if (vm.count("embedding") > 0) {
-            openai::start(vm["base-uri"].as<string>(), 
-                          vm["token"].as<string>(), 
-                          vm["proxy"].as<string>());
-
             if (vm.count("create") > 0) {
                 if (vm.count("data") > 0) {
                     ifstream is(vm["data"].as<string>());
@@ -155,10 +147,6 @@ int main(int argc, char * argv[]) {
                 }
             }
         } else if (vm.count("fine-tunning") > 0) {
-            openai::start(vm["base-uri"].as<string>(), 
-                          vm["token"].as<string>(), 
-                          vm["proxy"].as<string>());
-
             if (vm.count("create") > 0) {
                 if (vm.count("data") > 0) {
                     ifstream is(vm["data"].as<string>());
@@ -196,10 +184,6 @@ int main(int argc, char * argv[]) {
                 }
             }
         } else if (vm.count("files") > 0) {
-            openai::start(vm["base-uri"].as<string>(), 
-                          vm["token"].as<string>(), 
-                          vm["proxy"].as<string>());
-
             if (vm.count("upload") > 0) {
                 if (vm.count("data") > 0) {
                     ifstream is(vm["data"].as<string>());
@@ -227,10 +211,6 @@ int main(int argc, char * argv[]) {
                 }
             }
         } else if (vm.count("images") > 0) {
-            openai::start(vm["base-uri"].as<string>(), 
-                          vm["token"].as<string>(), 
-                          vm["proxy"].as<string>());
-
             if (vm.count("create") > 0) {
                 if (vm.count("data") > 0) {
                     ifstream is(vm["data"].as<string>());
@@ -269,10 +249,6 @@ int main(int argc, char * argv[]) {
                 }
             }
         } else if (vm.count("models") > 0) {
-            openai::start(vm["base-uri"].as<string>(), 
-                          vm["token"].as<string>(), 
-                          vm["proxy"].as<string>());
-
             if (vm.count("list") > 0) {
                 json response = openai::models().list();
                 cout << response.dump() << endl;
@@ -288,10 +264,6 @@ int main(int argc, char * argv[]) {
                 }
             }
         } else if (vm.count("moderations") > 0) {
-            openai::start(vm["base-uri"].as<string>(), 
-                          vm["token"].as<string>(), 
-                          vm["proxy"].as<string>());
-
             if (vm.count("create") > 0) {
                 if (vm.count("data") > 0) {
                     ifstream is(vm["data"].as<string>());

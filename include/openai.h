@@ -5,6 +5,8 @@
 #include <tuple>
 #include <stdexcept>
 #include <nlohmann/json.hpp>
+
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <httplib.h>
 
 using namespace std;
@@ -69,6 +71,9 @@ namespace openai {
 
     inline session_result Session::get(const string& path) {
         auto res = cli_.Get(path);
+        if (res.error() != Error::Success) {
+            return make_tuple(-1, httplib::to_string(res.error()));
+        }
         if (res->status != StatusCode::OK_200) {
             return make_tuple(-1, res->reason);
         }
@@ -79,6 +84,9 @@ namespace openai {
                                  const string& data, 
                                  const string& content_type /* = "application/json" */) {
         auto res = cli_.Post(path, data, content_type);
+        if (res.error() != Error::Success) {
+            return make_tuple(-1, httplib::to_string(res.error()));
+        }
         if (res->status != StatusCode::OK_200) {
             return make_tuple(-1, res->reason);
         }
@@ -88,6 +96,9 @@ namespace openai {
     inline session_result Session::post(const string& path, 
                                  const MultipartFormDataItems& items) {
         auto res = cli_.Post(path, items);
+        if (res.error() != Error::Success) {
+            return make_tuple(-1, httplib::to_string(res.error()));
+        }
         if (res->status != StatusCode::OK_200) {
             return make_tuple(-1, res->reason);
         }
@@ -96,6 +107,9 @@ namespace openai {
 
     inline session_result Session::del(const string& path) {
         auto res = cli_.Delete(path);
+        if (res.error() != Error::Success) {
+            return make_tuple(-1, httplib::to_string(res.error()));
+        }
         if (res->status != StatusCode::OK_200) {
             return make_tuple(-1, res->reason);
         }

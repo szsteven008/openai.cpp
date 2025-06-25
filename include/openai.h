@@ -46,12 +46,16 @@ namespace openai {
                 for (auto header: req.headers) {
                     cout << header.first << ": " << header.second << endl;
                 }
+                cout << endl;
+                std::cout << req.body << std::endl;
                 cout << endl << endl;
 
                 cout << resp.status << " " << resp.reason << endl;
                 for (auto header: resp.headers) {
                     cout << header.first << ": " << header.second << endl;
                 }
+                cout << endl;
+                std::cout << resp.body << std::endl;
                 cout << endl << endl;
             });
         }
@@ -585,8 +589,9 @@ namespace openai {
 
     inline OpenAI& start(const string& schema_host_port = "", 
                   const string& token = "", 
-                  const string& proxy_host_port = "") {
-        static OpenAI instance(schema_host_port, token, proxy_host_port);
+                  const string& proxy_host_port = "",
+                  const bool verbose = false) {
+        static OpenAI instance(schema_host_port, token, proxy_host_port, verbose);
         return instance;
     }
 

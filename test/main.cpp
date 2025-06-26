@@ -13,7 +13,7 @@ void usage(const string& name, const po::options_description& opts) {
          << name << " [--help|audio|chat|embedding|fine-tunning|files|images|models|moderations]" 
          << " [--speech|transcription|translation|create|list|events|checkpoints|retrieve|cancel|upload|delete|edit|variation]" 
          << " [--data data]"
-         << " [--base-uri schema://host:port]"
+         << " [--base-uri scheme://host:port]"
          << " [--token token]"
          << " [--proxy host:port]"
          << endl << endl
@@ -25,7 +25,7 @@ int main(int argc, char * argv[]) {
     po::options_description opts;
     opts.add_options()
                     ("help,h", "show this help message and exit")
-                    ("base-uri", po::value<string>()->default_value("https://api.openai.com"), "schema://host:port")
+                    ("base-uri", po::value<string>()->default_value("https://api.openai.com"), "scheme://host:port")
                     ("token", po::value<string>()->default_value(""), "token")
                     ("proxy", po::value<string>()->default_value(""), "host:port")
                     ("audio", "turn audio into text or text into audio.")

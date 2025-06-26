@@ -21,7 +21,7 @@ namespace openai {
         Client cli_;
 
         public:
-            Session(const string& schema_host_port, bool verbose = false);
+            Session(const string& scheme_host_port, bool verbose = false);
 
             void stop();
 
@@ -37,8 +37,8 @@ namespace openai {
             session_result del(const string& path);                
     };
 
-    inline Session::Session(const string& schema_host_port, bool verbose /* = false */) : 
-        cli_{schema_host_port} {
+    inline Session::Session(const string& scheme_host_port, bool verbose /* = false */) : 
+        cli_{scheme_host_port} {
         if (verbose) {
             cli_.set_logger([](const Request& req, const Response& resp) {
                 cout << endl;
@@ -228,7 +228,7 @@ namespace openai {
         Session session_;
 
         public:
-            OpenAI(const string& schema_host_port, 
+            OpenAI(const string& scheme_host_port, 
                    const string& token = "", 
                    const string& proxy_host_port = "", 
                    bool verbose = false);
@@ -254,11 +254,11 @@ namespace openai {
             CategoryModels models { *this };
     };
 
-    inline OpenAI::OpenAI(const string& schema_host_port, 
+    inline OpenAI::OpenAI(const string& scheme_host_port, 
                    const string& token /* = "" */, 
                    const string& proxy_host_port /* = "" */, 
                    bool verbose /* = false */)
-            : session_{schema_host_port, verbose} {
+            : session_{scheme_host_port, verbose} {
         if (!token.empty()) {
             session_.set_token(token);
         }
@@ -587,11 +587,11 @@ namespace openai {
         return openai_.post("/v1/moderations", request.dump());
     }
 
-    inline OpenAI& start(const string& schema_host_port = "", 
+    inline OpenAI& start(const string& scheme_host_port = "", 
                   const string& token = "", 
                   const string& proxy_host_port = "",
                   const bool verbose = false) {
-        static OpenAI instance(schema_host_port, token, proxy_host_port, verbose);
+        static OpenAI instance(scheme_host_port, token, proxy_host_port, verbose);
         return instance;
     }
 

@@ -33,7 +33,7 @@ namespace openai {
                                 const string& data, 
                                 const string& content_type = "application/json");
             session_result post(const string& path, 
-                                const MultipartFormDataItems& items);
+                                const UploadFormDataItems& items);
             session_result del(const string& path);                
     };
 
@@ -98,7 +98,7 @@ namespace openai {
     }
 
     inline session_result Session::post(const string& path, 
-                                 const MultipartFormDataItems& items) {
+                                 const UploadFormDataItems& items) {
         auto res = cli_.Post(path, items);
         if (res.error() != Error::Success) {
             return make_tuple(-1, httplib::to_string(res.error()));
@@ -240,7 +240,7 @@ namespace openai {
                       const string& data, 
                       const string& content_type = "application/json");
             json post(const string& path, 
-                      const MultipartFormDataItems& items);
+                      const UploadFormDataItems& items);
             json del(const string& path);
 
         public:
@@ -311,7 +311,7 @@ namespace openai {
     }
 
     inline json OpenAI::post(const string& path, 
-                      const MultipartFormDataItems& items) {
+                      const UploadFormDataItems& items) {
         int result;
         string response;
 
@@ -349,7 +349,7 @@ namespace openai {
     }
 
     inline json CategoryAudio::transcription(json request) {
-        MultipartFormDataItems items;
+        UploadFormDataItems items;
 
         if (request.contains("file")) {
             string path = request["file"].get<string>();
@@ -386,7 +386,7 @@ namespace openai {
     }
 
     inline json CategoryAudio::translation(json request) {
-        MultipartFormDataItems items;
+        UploadFormDataItems items;
 
         if (request.contains("file")) {
             string path = request["file"].get<string>();
@@ -450,7 +450,7 @@ namespace openai {
     }
 
     inline json CategoryFiles::upload(json request) {
-        MultipartFormDataItems items;
+        UploadFormDataItems items;
 
         if (request.contains("file")) {
             string path = request["file"].get<string>();
@@ -487,7 +487,7 @@ namespace openai {
     }
 
     inline json CategoryImages::edit(json request) {
-        MultipartFormDataItems items;
+        UploadFormDataItems items;
 
         if (request.contains("image")) {
             string path = request["image"].get<string>();
@@ -535,7 +535,7 @@ namespace openai {
     }
 
     inline json CategoryImages::variation(json request) {
-        MultipartFormDataItems items;
+        UploadFormDataItems items;
 
         if (request.contains("image")) {
             string path = request["image"].get<string>();
